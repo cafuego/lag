@@ -1,0 +1,65 @@
+<?php
+/**
+ * Implementation of hook_init()
+ *
+ * Retrieve lag and have a leasurely nap if required.
+ */
+function lag_init() {
+  $lag = lag_lag();
+  if ($lag) {
+    usleep($lag);
+  }
+}
+
+/**
+ * Implementation of hook_perm()
+ */
+function lag_perm() {
+  return array('administer lag');
+}
+
+/**
+ * Implementation of hook_menu()
+ */
+function lag_menu() {
+  $items = array();
+  $items['admin/settings/lag'] = array(
+    'title' => 'Lag',
+    'description' => 'Change lag settings for your roles.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('lag_admin_settings'),
+    'access arguments' => array('administer lag'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'lag.admin.inc',
+  );
+  return $items;
+}
+
+/**
+ * The meat. Or soy-based vegetarian meat substitute.
+ */
+function lag_lag() {
+  // If not configured, no lag.
+  // Maybe this should default to max_execution_time? ;-)
+  //
+  $settings = variable_get('lag', array());
+  if (empty($settings)) {
+    return 0;
+  }
+
+  // Initialise our lag variable.
+  $lag = 0;
+
+  // Grab user. Cycle through roles and add lag for each.
+  // Yes, it is cumulative.
+  // Yes, that's nasty.
+  //
+  global $user;
+
+  foreach ($user->roles as $rid => $role) {
+    if (isset($settings[$rid])) {
+      $lag += $settings[$rid];
+    }
+  }
+  return $lag;
+}

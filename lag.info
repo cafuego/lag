@@ -1,0 +1,4 @@
+name = Lag
+description = Add configurable lag to each role.
+core = 6.x
+package = Drupal for Evil
